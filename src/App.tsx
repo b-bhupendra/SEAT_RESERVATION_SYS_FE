@@ -9,6 +9,7 @@ import { Login } from './pages/Login';
 import { LandingPage } from './pages/LandingPage';
 import { Reservations } from './pages/Reservations';
 import Roles from './pages/Roles';
+import { CustomerPortal } from './pages/CustomerPortal';
 import { useAuth } from './lib/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -41,7 +42,9 @@ export default function App() {
 
   // Automatically update tab if role changes or on initial load
   useEffect(() => {
-    if (user?.role === 'staff' && currentTab === 'dashboard') {
+    if (user?.role === 'customer' && currentTab !== 'portal' && currentTab !== 'notifications') {
+      setCurrentTab('portal');
+    } else if (user?.role === 'staff' && currentTab === 'dashboard') {
       setCurrentTab('customers');
     }
   }, [user, currentTab]);
@@ -73,6 +76,7 @@ export default function App() {
                 selectedOrg={selectedOrg}
                 setSelectedOrg={setSelectedOrg}
               >
+                {currentTab === 'portal' && <CustomerPortal />}
                 {currentTab === 'dashboard' && <Dashboard user={user} selectedOrg={selectedOrg} />}
                 {currentTab === 'reservations' && <Reservations user={user} selectedOrg={selectedOrg} />}
                 {currentTab === 'customers' && <Customers user={user} selectedOrg={selectedOrg} />}

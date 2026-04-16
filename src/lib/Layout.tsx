@@ -53,12 +53,13 @@ export function Layout({
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   const navigation = [
+    { name: 'My Portal', id: 'portal', icon: <LayoutDashboard className="h-4 w-4" />, roles: ['customer'] },
     { name: 'Dashboard', id: 'dashboard', icon: <LayoutDashboard className="h-4 w-4" />, roles: ['admin', 'manager'] },
     { name: 'Reservations', id: 'reservations', icon: <CalendarDays className="h-4 w-4" />, roles: ['admin', 'manager', 'staff'] },
     { name: 'Customers', id: 'customers', icon: <Users className="h-4 w-4" />, roles: ['admin', 'manager', 'staff'] },
     { name: 'Billing', id: 'billing', icon: <Receipt className="h-4 w-4" />, roles: ['admin', 'manager'] },
     { name: 'Roles', id: 'roles', icon: <ShieldCheck className="h-4 w-4" />, roles: ['admin'] },
-    { name: 'Notifications', id: 'notifications', icon: <Bell className="h-4 w-4" />, roles: ['admin', 'manager', 'staff'] },
+    { name: 'Notifications', id: 'notifications', icon: <Bell className="h-4 w-4" />, roles: ['admin', 'manager', 'staff', 'customer'] },
   ].filter(item => user && user.role && item.roles.includes(user.role));
 
   const formatNotifDate = (dateStr: string) => {
@@ -247,16 +248,21 @@ export function Layout({
               </SheetContent>
             </Sheet>
 
-            <Select value={selectedOrg} onValueChange={setSelectedOrg}>
-              <SelectTrigger className="w-[180px] border-none bg-transparent font-bold text-lg focus:ring-0 shadow-none">
-                <SelectValue placeholder="Organization" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Organizations">All Organizations</SelectItem>
-                <SelectItem value="Trisha Library">Trisha Library</SelectItem>
-                <SelectItem value="G2 Library">G2 Library</SelectItem>
-              </SelectContent>
-            </Select>
+            {user?.role !== 'customer' && (
+              <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+                <SelectTrigger className="w-[180px] border-none bg-transparent font-bold text-lg focus:ring-0 shadow-none">
+                  <SelectValue placeholder="Organization" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All Organizations">All Organizations</SelectItem>
+                  <SelectItem value="Trisha Library">Trisha Library</SelectItem>
+                  <SelectItem value="G2 Library">G2 Library</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            {user?.role === 'customer' && (
+              <span className="font-bold text-lg px-3">Lumina Portal</span>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
