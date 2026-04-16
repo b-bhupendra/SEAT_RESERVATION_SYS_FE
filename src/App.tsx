@@ -40,12 +40,19 @@ export default function App() {
     setDarkMode(!darkMode);
   };
 
-  // Automatically update tab if role changes or on initial load
+  // Automatically update tab if permissions change or on initial load
   useEffect(() => {
-    if (user?.role === 'customer' && currentTab !== 'portal' && currentTab !== 'notifications') {
+    if (!user) return;
+    
+    // Check if user has permission string (simple helper since we don't have the context function here)
+    const hasPerm = (p: string) => user.permissions === '*' || user.permissions?.split(',').includes(p);
+
+    if (hasPerm('view_portal') && currentTab !== 'portal' && currentTab !== 'notifications') {
       setCurrentTab('portal');
-    } else if (user?.role === 'staff' && currentTab === 'dashboard') {
-      setCurrentTab('customers');
+    } else if (!hasPerm('view_dashboard') && currentTab === 'dashboard') {
+      // If they can't see dashboard but are on it, move them to something they CAN see
+      if (hasPerm('manage_customers')) setCurrentTab('customers');
+      else if (hasPerm('manage_reservations')) setCurrentTab('reservations');
     }
   }, [user, currentTab]);
 

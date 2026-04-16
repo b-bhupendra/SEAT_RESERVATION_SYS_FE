@@ -52,15 +52,22 @@ export function Layout({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
+  const hasPermission = (required: string) => {
+    if (!user || !user.permissions) return false;
+    if (user.permissions === '*') return true; // Superuser wildcard
+    const perms = user.permissions.split(',').map(p => p.trim());
+    return perms.includes(required) || perms.includes('all');
+  };
+
   const navigation = [
-    { name: 'My Portal', id: 'portal', icon: <LayoutDashboard className="h-4 w-4" />, roles: ['customer'] },
-    { name: 'Dashboard', id: 'dashboard', icon: <LayoutDashboard className="h-4 w-4" />, roles: ['admin', 'manager'] },
-    { name: 'Reservations', id: 'reservations', icon: <CalendarDays className="h-4 w-4" />, roles: ['admin', 'manager', 'staff'] },
-    { name: 'Customers', id: 'customers', icon: <Users className="h-4 w-4" />, roles: ['admin', 'manager', 'staff'] },
-    { name: 'Billing', id: 'billing', icon: <Receipt className="h-4 w-4" />, roles: ['admin', 'manager'] },
-    { name: 'Roles', id: 'roles', icon: <ShieldCheck className="h-4 w-4" />, roles: ['admin'] },
-    { name: 'Notifications', id: 'notifications', icon: <Bell className="h-4 w-4" />, roles: ['admin', 'manager', 'staff', 'customer'] },
-  ].filter(item => user && user.role && item.roles.includes(user.role));
+    { name: 'My Portal', id: 'portal', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'view_portal' },
+    { name: 'Dashboard', id: 'dashboard', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'view_dashboard' },
+    { name: 'Reservations', id: 'reservations', icon: <CalendarDays className="h-4 w-4" />, permission: 'manage_reservations' },
+    { name: 'Customers', id: 'customers', icon: <Users className="h-4 w-4" />, permission: 'manage_customers' },
+    { name: 'Billing', id: 'billing', icon: <Receipt className="h-4 w-4" />, permission: 'manage_billing' },
+    { name: 'Roles', id: 'roles', icon: <ShieldCheck className="h-4 w-4" />, permission: 'manage_roles' },
+    { name: 'Notifications', id: 'notifications', icon: <Bell className="h-4 w-4" />, permission: 'view_notifications' },
+  ].filter(item => hasPermission(item.permission));
 
   const formatNotifDate = (dateStr: string) => {
     try {
@@ -248,7 +255,7 @@ export function Layout({
               </SheetContent>
             </Sheet>
 
-            {user?.role !== 'customer' && (
+            {!hasPermission('view_portal') && (
               <Select value={selectedOrg} onValueChange={setSelectedOrg}>
                 <SelectTrigger className="w-[180px] border-none bg-transparent font-bold text-lg focus:ring-0 shadow-none">
                   <SelectValue placeholder="Organization" />
@@ -260,7 +267,7 @@ export function Layout({
                 </SelectContent>
               </Select>
             )}
-            {user?.role === 'customer' && (
+            {hasPermission('view_portal') && (
               <span className="font-bold text-lg px-3">Lumina Portal</span>
             )}
           </div>
