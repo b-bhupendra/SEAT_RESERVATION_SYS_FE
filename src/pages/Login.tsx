@@ -16,7 +16,7 @@ export function Login({ darkMode, onToggleDarkMode }: LoginProps) {
   const { login } = useAuth();
   const [email, setEmail] = useState('admin@admin.com');
   const [password, setPassword] = useState('admin');
-  const [role, setRole] = useState<'admin' | 'manager' | 'staff'>('admin');
+  const [role, setRole] = useState<'admin' | 'manager' | 'staff' | 'customer'>('admin');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -194,18 +194,24 @@ export function Login({ darkMode, onToggleDarkMode }: LoginProps) {
                 <span className="text-[9px] uppercase font-black text-muted-foreground/40 tracking-[0.5em]">Credentials</span>
               </div>
               <div className="grid grid-cols-1 gap-2.5">
-                {['admin', 'manager', 'staff'].map((r) => (
+                {['admin', 'manager', 'staff', 'customer'].map((r) => (
                   <motion.div 
                     key={r}
                     whileHover={{ x: 5, backgroundColor: 'hsl(var(--muted))' }}
                     className="text-[10px] font-bold py-3 px-4 bg-muted/40 rounded-xl border border-border/30 flex justify-between items-center group cursor-pointer transition-all" 
                     onClick={() => {
-                      setEmail(`${r}@admin.com`);
+                      if (r === 'customer') {
+                        setEmail('customer@example.com');
+                        setPassword('customer123');
+                      } else {
+                        setEmail(`${r}@admin.com`);
+                        setPassword('admin'); // Assuming 'admin' is the default for others for now
+                      }
                       setRole(r as any);
                     }}
                   >
                     <span className="text-muted-foreground/60 uppercase tracking-widest">{r}</span>
-                    <span className="text-foreground tracking-tight">{r}@admin.com</span>
+                    <span className="text-foreground tracking-tight">{r === 'customer' ? 'customer@example.com' : `${r}@admin.com`}</span>
                   </motion.div>
                 ))}
               </div>
