@@ -177,8 +177,26 @@ export function Layout({
   const activeNavItem = navigation.find(item => location.pathname === `/app/${item.id}`);
   const activeTabName = activeNavItem ? activeNavItem.name : 'DASHBOARD';
 
+  const handleMouseEnter = () => {
+    if (window.matchMedia('(hover: hover)').matches) {
+      setIsNavExpanded(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (window.matchMedia('(hover: hover)').matches) {
+      setIsNavExpanded(false);
+    }
+  };
+
+  const handleTabClick = () => {
+    if (!window.matchMedia('(hover: hover)').matches) {
+      setIsNavExpanded(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen bg-black text-white font-mono select-none antialiased">
+    <div className="flex min-h-screen bg-black text-white font-sans select-none antialiased">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border/40 bg-black/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
@@ -289,58 +307,65 @@ export function Layout({
           </div>
         </header>
 
-        {/* Collapsible Horizontal Navigation Toggle Bar */}
-        <div className="h-10 bg-card/60 border-b border-border/40 backdrop-blur-sm flex items-center justify-between px-4 md:px-8 font-mono text-xs z-20">
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground font-semibold">SYSTEM HUB</span>
-            <span className="text-muted-foreground/45">/</span>
-            <span className="text-primary font-bold uppercase tracking-wider">{activeTabName}</span>
+        {/* Collapsible Horizontal Navigation Toggle Bar & Drawer */}
+        <div 
+          className="relative z-20"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Collapsible Horizontal Navigation Toggle Bar */}
+          <div className="h-10 bg-card/60 border-b border-border/40 backdrop-blur-sm flex items-center justify-between px-4 md:px-8 font-mono text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground font-semibold">SYSTEM HUB</span>
+              <span className="text-muted-foreground/45">/</span>
+              <span className="text-primary font-bold uppercase tracking-wider">{activeTabName}</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsNavExpanded(!isNavExpanded)}
+              className="text-[10px] uppercase font-black tracking-widest text-primary hover:text-white hover:bg-white/10 gap-1.5 focus:ring-0 focus-visible:ring-0 h-7"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              {isNavExpanded ? 'Collapse Tabs' : 'Choose Tab'}
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsNavExpanded(!isNavExpanded)}
-            className="text-[10px] uppercase font-black tracking-widest text-primary hover:text-white hover:bg-white/10 gap-1.5 focus:ring-0 focus-visible:ring-0 h-7"
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
-            {isNavExpanded ? 'Collapse Tabs' : 'Choose Tab'}
-          </Button>
-        </div>
 
-        {/* Collapsible Horizontal Bento Grid Drawer */}
-        <div className={cn(
-          "transition-all duration-300 ease-in-out overflow-hidden bg-black/95 z-20",
-          isNavExpanded ? "max-h-[350px] border-b border-border/40" : "max-h-0 border-b-0"
-        )}>
-          <div className="px-4 py-6 md:px-8 max-w-7xl mx-auto">
-            <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-center gap-3">
-              {navigation.map((item) => {
-                const isActive = location.pathname === `/app/${item.id}`;
-                return (
-                  <NavLink
-                    key={item.id}
-                    to={`/app/${item.id}`}
-                    onClick={() => setIsNavExpanded(false)}
-                    className={({ isActive }) => cn(
-                      "flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-150 text-center cursor-pointer group aspect-square",
-                      "w-full md:w-32 md:h-32",
-                      isActive 
-                        ? "border-primary bg-primary/10 text-primary font-bold shadow-lg shadow-primary/10" 
-                        : "border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10 hover:border-white/30 hover:text-white"
-                    )}
-                  >
-                    <div className={cn(
-                      "transition-transform group-hover:scale-110",
-                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"
-                    )}>
-                      {item.icon}
-                    </div>
-                    <span className="text-[9px] font-black uppercase mt-3 tracking-widest truncate max-w-full">
-                      {item.name.replace('Customer Reservations', 'CRM').replace('Notifications', 'Logs').replace('Dashboard', 'Sys').replace('Billing', 'Billing').replace('Settings', 'Config')}
-                    </span>
-                  </NavLink>
-                );
-              })}
+          {/* Collapsible Horizontal Bento Grid Drawer */}
+          <div className={cn(
+            "transition-all duration-300 ease-in-out overflow-hidden bg-black/95",
+            isNavExpanded ? "max-h-[350px] border-b border-border/40" : "max-h-0 border-b-0"
+          )}>
+            <div className="px-4 py-6 md:px-8 max-w-7xl mx-auto">
+              <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-center gap-3">
+                {navigation.map((item) => {
+                  const isActive = location.pathname === `/app/${item.id}`;
+                  return (
+                    <NavLink
+                      key={item.id}
+                      to={`/app/${item.id}`}
+                      onClick={handleTabClick}
+                      className={({ isActive }) => cn(
+                        "flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-150 text-center cursor-pointer group aspect-square",
+                        "w-full md:w-32 md:h-32",
+                        isActive 
+                          ? "border-primary bg-primary/10 text-primary font-bold shadow-lg shadow-primary/10" 
+                          : "border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10 hover:border-white/30 hover:text-white"
+                      )}
+                    >
+                      <div className={cn(
+                        "transition-transform group-hover:scale-110",
+                        isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"
+                      )}>
+                        {item.icon}
+                      </div>
+                      <span className="text-[9px] font-black uppercase mt-3 tracking-widest truncate max-w-full">
+                        {item.name.replace('Customer Reservations', 'CRM').replace('Notifications', 'Logs').replace('Dashboard', 'Sys').replace('Billing', 'Billing').replace('Settings', 'Config')}
+                      </span>
+                    </NavLink>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -349,10 +374,10 @@ export function Layout({
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeInOut" }}
               className="h-full"
             >
               <Outlet />
