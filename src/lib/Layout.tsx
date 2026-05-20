@@ -185,7 +185,7 @@ export function Layout({
       }
       hoverTimeoutRef.current = setTimeout(() => {
         setIsNavExpanded(true);
-      }, 150);
+      }, 300);
     }
   };
 
@@ -343,12 +343,17 @@ export function Layout({
           </div>
 
           {/* Collapsible Horizontal Bento Grid Drawer */}
-          <div className={cn(
-            "transition-all duration-300 ease-in-out overflow-hidden bg-black/95",
-            isNavExpanded ? "max-h-[350px] border-b border-border/40" : "max-h-0 border-b-0"
-          )}>
-            <div className="px-4 py-6 md:px-8 max-w-7xl mx-auto">
-              <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-center gap-3">
+          <AnimatePresence initial={false}>
+            {isNavExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="overflow-hidden bg-black/95 border-b border-border/40 origin-top"
+              >
+                <div className="px-4 py-6 md:px-8 max-w-7xl mx-auto">
+                  <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-center gap-3">
                 {navigation.map((item) => {
                   const isActive = location.pathname === `/app/${item.id}`;
                   return (
@@ -378,7 +383,9 @@ export function Layout({
                 })}
               </div>
             </div>
-          </div>
+          </motion.div>
+          )}
+          </AnimatePresence>
         </div>
 
         <main className="flex-1 p-4 md:p-8 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] md:pb-8 animate-fade-in">
