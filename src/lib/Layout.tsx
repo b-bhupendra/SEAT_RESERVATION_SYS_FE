@@ -212,13 +212,14 @@ export function Layout({
         </div>
 
         {/* Navigation List */}
-        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1.5">
           {navigation.map((item) => {
             const isActive = location.pathname === `/app/${item.id}`;
             return (
               <NavLink
                 key={item.id}
                 to={`/app/${item.id}`}
+                title={isSidebarCollapsed ? item.name : undefined}
                 className={({ isActive }) => cn(
                   "w-full flex items-center rounded-lg text-sm font-medium transition-all duration-200 group relative",
                   isSidebarCollapsed ? "justify-center p-2 h-10 w-10 mx-auto" : "gap-3 px-3 py-2.5",
