@@ -49,7 +49,23 @@ export function Layout({
   setSelectedOrg: (org: string) => void,
   user: any
 }) {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('sidebar-collapsed');
+      return saved ? JSON.parse(saved) : false;
+    } catch {
+      return false;
+    }
+  });
   const [allOrgsList, setAllOrgsList] = useState<string[]>(['Trisha Library', 'G2 Library']);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (user.role !== 'customer') {
@@ -175,52 +191,121 @@ export function Layout({
 
   return (
     <div className="flex min-h-screen bg-black text-white font-mono select-none antialiased">
+      {/* Collapsible Sidebar for Desktop */}
+      <aside className={cn(
+        "hidden md:flex flex-col h-screen bg-card border-r border-border transition-all duration-300 sticky top-0 z-40 shrink-0",
+        isSidebarCollapsed ? "w-16" : "w-64"
+      )}>
+        {/* Brand Logo Section */}
+        <div className={cn(
+          "flex items-center h-16 border-b border-border px-4 transition-all duration-300",
+          isSidebarCollapsed ? "justify-center" : "justify-between"
+        )}>
+          <div className="flex items-center gap-2 overflow-hidden">
+            <Hexagon className="h-6 w-6 text-primary shrink-0 animate-pulse" />
+            {!isSidebarCollapsed && (
+              <span className="font-extrabold text-xl text-primary tracking-tighter truncate font-mono">
+                LUMINA PRO
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation List */}
+        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+          {navigation.map((item) => {
+            const isActive = location.pathname === `/app/${item.id}`;
+            return (
+              <NavLink
+                key={item.id}
+                to={`/app/${item.id}`}
+                className={({ isActive }) => cn(
+                  "w-full flex items-center rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                  isSidebarCollapsed ? "justify-center p-2 h-10 w-10 mx-auto" : "gap-3 px-3 py-2.5",
+                  isActive 
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <div className={cn(
+                  "transition-transform",
+                  isActive ? "scale-110" : "group-hover:scale-110"
+                )}>
+                  {item.icon}
+                </div>
+                {!isSidebarCollapsed ? (
+                  <span className="truncate font-semibold tracking-tight">{item.name}</span>
+                ) : (
+                  <span className="absolute left-16 bg-black border border-white/20 text-white text-[10px] font-bold py-1.5 px-3 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-50 font-mono shadow-2xl uppercase tracking-wider">
+                    {item.name}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        {/* Collapse Toggle & Profile Area */}
+        <div className="p-3 border-t border-border mt-auto flex flex-col gap-2">
+          {/* Toggle Button */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={toggleSidebar}
+            className="w-full text-muted-foreground hover:text-white justify-center h-9 focus:ring-0 focus-visible:ring-0"
+          >
+            {isSidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {!isSidebarCollapsed && <span className="ml-2 text-xs font-bold uppercase tracking-wider">Collapse</span>}
+          </Button>
+
+          {/* Profile Card / Dropdown Trigger */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className={cn(
+                "w-full flex items-center p-2 rounded-lg hover:bg-accent hover:text-accent-foreground text-left transition-colors focus:outline-none cursor-pointer",
+                isSidebarCollapsed ? "justify-center h-10 w-10 mx-auto p-0" : "gap-3"
+              )}>
+                <Avatar className="h-9 w-9 border border-primary shrink-0">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-mono font-bold">
+                    {user?.role?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                {!isSidebarCollapsed && (
+                  <div className="flex-1 min-w-0 flex flex-col">
+                    <span className="text-sm font-bold capitalize truncate text-white">{user?.role || 'User'}</span>
+                    <span className="text-[10px] text-muted-foreground truncate">{user?.email}</span>
+                  </div>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="right" className="bg-black text-white border-white/20 font-mono w-56">
+              <DropdownMenuLabel className="font-bold text-xs opacity-70 truncate px-2 py-1.5">
+                {user?.email}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuItem onClick={() => navigate('/app/settings')} className="hover:bg-white/10 cursor-pointer flex items-center gap-2 text-sm py-2">
+                <Settings className="h-4 w-4 text-primary" />
+                <span>Personal Preferences</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuItem onClick={onLogout} className="hover:bg-red-500/10 cursor-pointer text-destructive focus:text-destructive flex items-center gap-2 text-sm py-2">
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </aside>
+
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border/40 bg-black/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-4">
-            {/* Logo */}
-            <div className="flex items-center gap-2 mr-2">
+            {/* On Mobile, show Brand Logo */}
+            <div className="flex items-center gap-2 md:hidden">
               <Hexagon className="h-6 w-6 text-primary shrink-0 animate-pulse" />
               <span className="font-extrabold text-xl text-primary tracking-tighter truncate font-mono">LUMINA PRO</span>
             </div>
-
-            {/* Bento App Launcher */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 relative group focus:ring-0 focus-visible:ring-0">
-                  <LayoutGrid className="h-5 w-5 text-primary group-hover:rotate-90 transition-transform duration-300" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="p-3 bg-black/90 backdrop-blur-xl border border-white/20 font-mono w-[300px] shadow-2xl mt-1 animate-in slide-in-from-top-2 duration-200">
-                <DropdownMenuLabel className="text-[10px] font-black tracking-wider text-muted-foreground uppercase mb-2 px-1">
-                  System Modules
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/10 mb-2" />
-                <div className="grid grid-cols-3 gap-2">
-                  {navigation.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => navigate(`/app/${item.id}`)}
-                      className={cn(
-                        "flex flex-col items-center justify-center p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-primary/15 hover:border-primary/40 transition-all duration-150 group text-center aspect-square",
-                        location.pathname === `/app/${item.id}` ? "border-primary bg-primary/10 text-primary font-bold" : ""
-                      )}
-                    >
-                      <div className={cn(
-                        "transition-transform group-hover:scale-110",
-                        location.pathname === `/app/${item.id}` ? "text-primary" : "text-muted-foreground group-hover:text-primary"
-                      )}>
-                        {item.icon}
-                      </div>
-                      <span className="text-[9px] font-black uppercase mt-2 tracking-wider text-muted-foreground group-hover:text-white truncate max-w-full">
-                        {item.name.replace('Customer Reservations', 'CRM').replace('Notifications', 'Logs').replace('Dashboard', 'Sys').replace('Billing', 'Billing').replace('Settings', 'Config')}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
             {/* Org Selector */}
             {user.role !== 'customer' && (() => {
