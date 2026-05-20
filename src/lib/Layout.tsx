@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, Users, Receipt, Bell, LogOut, 
   Menu, ChevronLeft, ChevronRight, Moon, Sun,
-  CalendarDays, Settings, ShieldCheck, Hexagon
+  CalendarDays, Settings, ShieldCheck, Hexagon,
+  LayoutGrid
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/lib/api";
@@ -48,7 +49,6 @@ export function Layout({
   setSelectedOrg: (org: string) => void,
   user: any
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [allOrgsList, setAllOrgsList] = useState<string[]>(['Trisha Library', 'G2 Library']);
 
   useEffect(() => {
@@ -173,114 +173,56 @@ export function Layout({
     </DropdownMenu>
   );
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-card border-r border-border">
-      <div className={cn(
-        "flex items-center h-16 px-6 border-b border-border transition-all duration-300",
-        isCollapsed ? "justify-center" : "justify-between"
-      )}>
-        {isCollapsed ? (
-          <Hexagon className="h-6 w-6 text-primary shrink-0" />
-        ) : (
-          <div className="flex items-center gap-2">
-            <Hexagon className="h-6 w-6 text-primary shrink-0" />
-            <span className="font-extrabold text-xl text-primary tracking-tighter truncate">LUMINA PRO</span>
-          </div>
-        )}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex"
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-      </div>
-
-      <div className="p-4">
-        <div className={cn(
-          "flex items-center gap-3 p-3 rounded-lg bg-muted/50",
-          isCollapsed ? "justify-center" : ""
-        )}>
-          <Avatar className="h-10 w-10 border-2 border-primary">
-            <AvatarFallback>{user?.role?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
-          </Avatar>
-          {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-bold capitalize truncate">{user?.role || 'User'}</span>
-              <span className="text-[10px] text-muted-foreground truncate">{user?.email}</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <nav className="flex-1 px-4 space-y-1 py-4">
-        {navigation.map((item) => {
-          return (
-            <NavLink
-              key={item.id}
-              to={`/app/${item.id}`}
-              className={({ isActive }) => cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors group",
-                isActive 
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                isCollapsed ? "justify-center" : ""
-              )}
-            >
-              <div className={cn(
-                "transition-transform",
-                location.pathname === `/app/${item.id}` ? "scale-110" : "group-hover:scale-110"
-              )}>
-                {item.icon}
-              </div>
-              {!isCollapsed && <span>{item.name}</span>}
-            </NavLink>
-          );
-        })}
-      </nav>
-
-      <div className="p-4 border-t border-border mt-auto">
-        <Button 
-          variant="ghost" 
-          className={cn(
-            "w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10",
-            isCollapsed && "justify-center p-0"
-          )}
-          onClick={onLogout}
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          {!isCollapsed && <span>Logout</span>}
-        </Button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex min-h-screen bg-black text-white font-mono select-none antialiased">
-      {/* Sidebar for Desktop */}
-      <aside className={cn(
-        "hidden md:block transition-all duration-300 ease-in-out border-r border-border/40",
-        isCollapsed ? "w-20" : "w-64"
-      )}>
-        <SidebarContent />
-      </aside>
-
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border/40 bg-black/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64 border-none bg-black text-white">
-                <SidebarContent />
-              </SheetContent>
-            </Sheet>
+            {/* Logo */}
+            <div className="flex items-center gap-2 mr-2">
+              <Hexagon className="h-6 w-6 text-primary shrink-0 animate-pulse" />
+              <span className="font-extrabold text-xl text-primary tracking-tighter truncate font-mono">LUMINA PRO</span>
+            </div>
 
+            {/* Bento App Launcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 relative group focus:ring-0 focus-visible:ring-0">
+                  <LayoutGrid className="h-5 w-5 text-primary group-hover:rotate-90 transition-transform duration-300" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="p-3 bg-black/90 backdrop-blur-xl border border-white/20 font-mono w-[300px] shadow-2xl mt-1 animate-in slide-in-from-top-2 duration-200">
+                <DropdownMenuLabel className="text-[10px] font-black tracking-wider text-muted-foreground uppercase mb-2 px-1">
+                  System Modules
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/10 mb-2" />
+                <div className="grid grid-cols-3 gap-2">
+                  {navigation.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => navigate(`/app/${item.id}`)}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-primary/15 hover:border-primary/40 transition-all duration-150 group text-center aspect-square",
+                        location.pathname === `/app/${item.id}` ? "border-primary bg-primary/10 text-primary font-bold" : ""
+                      )}
+                    >
+                      <div className={cn(
+                        "transition-transform group-hover:scale-110",
+                        location.pathname === `/app/${item.id}` ? "text-primary" : "text-muted-foreground group-hover:text-primary"
+                      )}>
+                        {item.icon}
+                      </div>
+                      <span className="text-[9px] font-black uppercase mt-2 tracking-wider text-muted-foreground group-hover:text-white truncate max-w-full">
+                        {item.name.replace('Customer Reservations', 'CRM').replace('Notifications', 'Logs').replace('Dashboard', 'Sys').replace('Billing', 'Billing').replace('Settings', 'Config')}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Org Selector */}
             {user.role !== 'customer' && (() => {
               const ALL_ORGS = allOrgsList;
               const selectedOrgs = selectedOrg
@@ -353,15 +295,34 @@ export function Layout({
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
 
-            <Avatar className="h-8 w-8 cursor-pointer border-2 border-primary ring-2 ring-primary/20" onClick={onLogout}>
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-mono font-bold">
-                {user?.role?.charAt(0).toUpperCase() || 'A'}
-              </AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-8 w-8 cursor-pointer border-2 border-primary ring-2 ring-primary/20">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-mono font-bold">
+                    {user?.role?.charAt(0).toUpperCase() || 'A'}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-black text-white border-white/20 font-mono w-56">
+                <DropdownMenuLabel className="font-bold text-xs opacity-70 truncate px-2 py-1.5">
+                  {user?.email}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem onClick={() => navigate('/app/settings')} className="hover:bg-white/10 cursor-pointer flex items-center gap-2 text-sm py-2">
+                  <Settings className="h-4 w-4 text-primary" />
+                  <span>Personal Preferences</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem onClick={onLogout} className="hover:bg-red-500/10 cursor-pointer text-destructive focus:text-destructive flex items-center gap-2 text-sm py-2">
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] md:pb-8">
+        <main className="flex-1 p-4 md:p-8 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] md:pb-8 animate-fade-in">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
