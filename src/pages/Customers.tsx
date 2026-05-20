@@ -34,6 +34,7 @@ import { api, PaginatedResponse } from "@/lib/api";
 import { Billing } from "./Billing";
 import { Checkout } from "../components/Checkout";
 import { Reservations } from "./Reservations";
+import { RegistrationForm } from "@/components/RegistrationForm";
 
 const customerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -390,103 +391,16 @@ export function Customers({ selectedOrg, user }: { selectedOrg?: string, user: U
           </div>
 
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <DialogTitle>Add New Customer</DialogTitle>
             <DialogDescription>
-              Enter the customer details below. We'll use this for biometric enrollment.
+              Enter the customer details below. This securely adds them to the selected branch.
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="john@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="1234567890" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="organization"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Organization</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select organization" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Trisha Library">Trisha Library</SelectItem>
-                        <SelectItem value="G2 Library">G2 Library</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="sub_organization"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sub-organization / Location</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select section" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Premium Zone">Premium Zone</SelectItem>
-                        <SelectItem value="General Area">General Area</SelectItem>
-                        <SelectItem value="Reading Room">Reading Room</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter className="pt-4">
-                <Button variant="ghost" type="button" onClick={() => setShowAdd(false)}>Cancel</Button>
-                <Button type="submit">Save Customer</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <div className="max-h-[70vh] overflow-y-auto px-1 py-4">
+            <RegistrationForm isAdmin={true} onSuccess={() => { setShowAdd(false); fetchCustomers(); }} />
+          </div>
         </DialogContent>
       </Dialog>
 
