@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
@@ -50,6 +50,7 @@ export function Layout({
   user: any
 }) {
   const [isNavExpanded, setIsNavExpanded] = useState<boolean>(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [allOrgsList, setAllOrgsList] = useState<string[]>(['Trisha Library', 'G2 Library']);
 
   useEffect(() => {
@@ -179,13 +180,23 @@ export function Layout({
 
   const handleMouseEnter = () => {
     if (window.matchMedia('(hover: hover)').matches) {
-      setIsNavExpanded(true);
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      hoverTimeoutRef.current = setTimeout(() => {
+        setIsNavExpanded(true);
+      }, 150);
     }
   };
 
   const handleMouseLeave = () => {
     if (window.matchMedia('(hover: hover)').matches) {
-      setIsNavExpanded(false);
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      hoverTimeoutRef.current = setTimeout(() => {
+        setIsNavExpanded(false);
+      }, 300);
     }
   };
 
