@@ -109,6 +109,46 @@ export function CustomerPortal() {
     }
   };
 
+  const [documents, setDocuments] = useState<string[]>([]);
+  const [uploadingDocs, setUploadingDocs] = useState(false);
+
+  const fetchMyProfile = async () => {
+    try {
+      const res = await api.get<any>('/api/me/profile');
+      if (res.documents) setDocuments(res.documents);
+    } catch (err) {
+      console.error("Failed to fetch my profile:", err);
+    }
+  };
+
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadingDocs(true);
+    try {
+      const newDocs: string[] = [];
+      for (const file of Array.from(files)) {
+        const reader = new FileReader();
+        await new Promise(resolve => {
+          reader.onloadend = () => {
+            newDocs.push(reader.result as string);
+            resolve(null);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      const res = await api.put<any>('/api/me/documents', { documents: [...documents, ...newDocs] });
+      setDocuments(res.documents);
+      toast.success("Documents uploaded securely.");
+    } catch (err) {
+      toast.error("Failed to upload documents.");
+    } finally {
+      setUploadingDocs(false);
+    }
+  };
+
+
   const handleNextQuote = () => {
     setQuoteIndex(prev => {
       let next = Math.floor(Math.random() * STUDY_QUOTES.length);
@@ -183,6 +223,7 @@ export function CustomerPortal() {
   useEffect(() => {
     fetchData();
     fetchMyBills();
+    fetchMyProfile();
   }, []);
 
   // Silent live polling for pending/processing payment states
@@ -835,6 +876,78 @@ export function CustomerPortal() {
           </motion.div>
         )}
       </div>
+
+      {/* Identity Documents Section */}
+      {hasPermission('view_portal') && (
+        <div className="space-y-4 pt-4 relative z-10">
+           <h3 className="text-xl font-bold flex items-center gap-2">
+             <ShieldCheck className="h-5 w-5 text-primary" /> 
+             Identity Documents
+           </h3>
+           <Card className="border-none shadow-sm shadow-black/5 bg-card/50 backdrop-blur-md p-6">
+             <div className="grid gap-4 md:grid-cols-2">
+               <div>
+                 <p className="text-sm text-muted-foreground mb-4">
+                   Upload your government-issued ID (Aadhar, PAN, Student ID) to verify your account and secure your seat.
+                 </p>
+                 <div className="relative overflow-hidden group border-2 border-dashed border-primary/20 hover:border-primary/50 transition-colors rounded-xl bg-primary/5 p-6 flex flex-col items-center justify-center cursor-pointer min-h-[160px]">
+                   <input 
+                     type="file" 
+                     multiple 
+                     accept="image/*,.pdf" 
+                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                     onChange={handleDocUpload}
+                     disabled={uploadingDocs}
+                   />
+                   {uploadingDocs ? (
+                     <>
+                       <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                       <p className="font-bold text-sm text-primary">Uploading Securely...</p>
+                     </>
+                   ) : (
+                     <>
+                       <div className="p-3 rounded-full bg-primary/10 text-primary mb-3 group-hover:scale-110 transition-transform">
+                         <ShieldCheck className="h-6 w-6" />
+                       </div>
+                       <p className="font-bold text-sm">Tap or Drag files to Upload</p>
+                       <p className="text-[10px] uppercase font-black text-muted-foreground mt-1 tracking-widest">End-to-End Encrypted</p>
+                     </>
+                   )}
+                 </div>
+               </div>
+               
+               <div className="bg-card border border-border/50 rounded-xl p-4 min-h-[160px]">
+                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Submitted Files ({documents.length})</h4>
+                 {documents.length === 0 ? (
+                   <div className="h-full flex flex-col items-center justify-center text-muted-foreground/50 pb-6">
+                     <ShieldCheck className="h-8 w-8 mb-2 opacity-20" />
+                     <p className="text-xs font-medium">No documents uploaded yet.</p>
+                   </div>
+                 ) : (
+                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                     {documents.map((doc, idx) => {
+                        const isPdf = doc.startsWith('data:application/pdf') || doc.toLowerCase().endsWith('.pdf');
+                        return isPdf ? (
+                          <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-lg border border-border/50 bg-muted/30 hover:bg-muted transition-colors flex flex-col items-center justify-center p-2 text-rose-500">
+                            <Receipt className="h-8 w-8 mb-1" />
+                            <span className="text-[10px] font-bold text-foreground">PDF File</span>
+                          </a>
+                        ) : (
+                          <a key={idx} href={doc} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-lg border border-border/50 overflow-hidden relative group">
+                            <img src={doc} alt={`Doc ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <ArrowUpRight className="h-5 w-5 text-white" />
+                            </div>
+                          </a>
+                        );
+                     })}
+                   </div>
+                 )}
+               </div>
+             </div>
+           </Card>
+        </div>
+      )}
 
       {/* Ability-Based Billing & Notifications Grid */}
       {hasPermission('view_portal') && (

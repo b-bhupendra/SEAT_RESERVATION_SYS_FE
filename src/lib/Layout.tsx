@@ -350,7 +350,7 @@ export function Layout({
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden bg-black/95 border-b border-border/40 origin-top"
+                className="absolute left-0 right-0 top-full overflow-hidden bg-black/95 border-b border-border/40 origin-top shadow-2xl z-50"
               >
                 <div className="px-4 py-6 md:px-8 max-w-7xl mx-auto">
                   <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-center gap-3">
